@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ค้นหาโต๊ะของคุณ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#faf7f2;--card:#fff;--text:#2b2623;--muted:#7a716a;--accent:#b5543a;--line:#e8e0d6;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1917;--card:#292422;--text:#f3ede7;--muted:#a89e95;--accent:#e08a6f;--line:#3d3531;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1917;--card:#292422;--text:#f3ede7;--muted:#a89e95;--accent:#e08a6f;--line:#3d3531;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:"Noto Sans Thai",system-ui,sans-serif;min-height:100vh}
+main{max-width:560px;margin:0 auto;padding:28px 18px 40px}
+h1{font-size:1.6rem;margin:0 0 4px;text-align:center}
+.sub{text-align:center;color:var(--muted);margin:0 0 22px}
+input[type=search]{width:100%;font:inherit;font-size:1.15rem;padding:14px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--text)}
+input[type=search]:focus{outline:none;border-color:var(--accent)}
+#results{margin-top:16px;display:grid;gap:10px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.nm{font-weight:600}
+.nk{color:var(--muted);font-size:.9rem}
+.tb{text-align:center;min-width:72px}
+.tb small{display:block;color:var(--muted);font-size:.75rem}
+.tb b{font-size:2rem;color:var(--accent);line-height:1.1}
+.msg{text-align:center;color:var(--muted);padding:18px 0}
+details{margin-top:36px;border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font-size:.9rem}
+summary{cursor:pointer}
+textarea{width:100%;height:120px;margin-top:10px;font:inherit;font-size:.85rem;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+button{margin-top:8px;font:inherit;padding:8px 16px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <h1>ค้นหาโต๊ะของคุณ</h1>
+  <p class="sub">พิมพ์ชื่อ ชื่อเล่น หรือนามสกุล</p>
+  <input type="search" id="q" placeholder="เช่น สมชาย" autocomplete="off" autofocus>
+  <div id="results"><div class="msg">พิมพ์ชื่อเพื่อค้นหา</div></div>
+
+  <details>
+    <summary>สำหรับผู้จัดงาน: ทดลองวางรายชื่อ</summary>
+    <p>วางข้อมูลบรรทัดละคน รูปแบบ: ชื่อ-นามสกุล, ชื่อเล่น, เลขโต๊ะ (คัดลอกจาก Excel/Sheets ได้เลย)</p>
+    <textarea id="paste" placeholder="สมชาย ใจดี, ชาย, 5"></textarea>
+    <button id="load">โหลดรายชื่อ</button>
+    <span id="count"></span>
+  </details>
+</main>
+<script>
+// รายชื่อตัวอย่าง: { ชื่อเต็ม, ชื่อเล่น, โต๊ะ }
+let guests = [];
+const q=document.getElementById("q"),out=document.getElementById("results");
+const norm=s=>(s||"").toLowerCase().replace(/\s+/g," ").trim();
+function render(){
+  const v=norm(q.value);
+  if(!v){out.innerHTML='<div class="msg">พิมพ์ชื่อเพื่อค้นหา</div>';return}
+  const hits=guests.filter(g=>norm(g.n+" "+g.k).includes(v)).slice(0,20);
+  if(!hits.length){out.innerHTML='<div class="msg">ไม่พบรายชื่อ ลองพิมพ์ส่วนอื่นของชื่อ หรือสอบถามเจ้าหน้าที่ที่โต๊ะลงทะเบียน</div>';return}
+  out.innerHTML=hits.map(g=>`<div class="item"><div><div class="nm">${esc(g.n)}</div><div class="nk">${g.k?esc(g.k):""}</div></div><div class="tb"><small>โต๊ะ</small><b>${esc(g.t)}</b></div></div>`).join("");
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+q.addEventListener("input",render);
+document.getElementById("load").onclick=()=>{
+  const rows=document.getElementById("paste").value.split("\n").map(l=>l.split(/\t|,/).map(x=>x.trim())).filter(r=>r.length>=2&&r[0]);
+  guests=rows.map(r=>r.length>=3?{n:r[0],k:r[1],t:r[2]}:{n:r[0],k:"",t:r[1]});
+  document.getElementById("count").textContent=" โหลดแล้ว "+guests.length+" คน";
+  render();
+};
+</script>
+</body>
+</html>
